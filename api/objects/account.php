@@ -5,5 +5,6 @@ class Account{
     public $email;
     public $password;
     public $username;
+    public $isLoggedIn;
 }
 ?>

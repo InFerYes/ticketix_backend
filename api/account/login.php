@@ -34,7 +34,7 @@ if(
         http_response_code(200);
 
         echo json_encode(
-            array("message" => "OK.")
+            array("message" => "Logged in.")
         );
     }
     catch (\Delight\Auth\InvalidEmailException $e) {

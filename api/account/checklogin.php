@@ -14,21 +14,16 @@ $database = new Database();
 $db = $database->getConnection();
  
 $auth = new \Delight\Auth\Auth($db);
+if ($auth->isLoggedIn()) {
+    http_response_code(200);
+    $isLoggedIn = array("isLoggedIn" => true);
 
-try {
-    $auth->logOutEverywhere();
-    http_response_code(201);
-
-    echo json_encode(
-        array("message" => "OK.")
-    );
+    echo json_encode($isLoggedIn);
 }
-catch (\Delight\Auth\NotLoggedInException $e) {
+else {
     http_response_code(401);
-
-    echo json_encode(
-        array("message" => "Expectation Failed: Not logged in.")
-    );
+    $isLoggedIn = array("isLoggedIn" => false);
+    echo json_encode($isLoggedIn);
     die('');
 }
 ?>

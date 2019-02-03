@@ -18,6 +18,7 @@ class Person{
     public $createdate;
     public $modifdate;
     public $teamname;
+    public $iduser; //to implement
  
     // constructor with $db as database connection
     public function __construct($db){

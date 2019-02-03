@@ -15,7 +15,7 @@ $db = $database->getConnection();
 
 $auth = new \Delight\Auth\Auth($db);
 
-if ($auth->isLoggedIn()) {
+if ($auth->isLoggedIn() && $auth->hasRole(\Delight\Auth\Role::ADMIN)) {
     include_once '../objects/person.php';    
     
     // initialize object
@@ -85,5 +85,4 @@ else {
         array("message" => "Unauthorized.")
     );
 }
-
-
+?>
