@@ -17,7 +17,7 @@ $auth = new \Delight\Auth\Auth($db);
 
 try {
     $auth->logOutEverywhere();
-    http_response_code(201);
+    http_response_code(200);
 
     echo json_encode(
         array("message" => "OK.")

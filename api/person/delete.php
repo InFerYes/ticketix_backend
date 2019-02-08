@@ -9,37 +9,51 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 // include database and object file
 include_once '../config/database.php';
 include_once '../objects/person.php';
- 
+require(realpath(__DIR__ . '/../../vendor/autoload.php'));
+
 // get database connection
 $database = new Database();
 $db = $database->getConnection();
  
-// prepare person object
-$person = new person($db);
- 
-// get person id
-$data = json_decode(file_get_contents("php://input"));
- 
-// set person id to be deleted
-$person->id = $data->id;
- 
-// delete the person
-if($person->delete()){
- 
-    // set response code - 200 ok
-    http_response_code(200);
- 
-    // tell the user
-    echo json_encode(array("message" => "person was deleted."));
+$auth = new \Delight\Auth\Auth($db);
+
+if ($auth->isLoggedIn() && $auth->hasRole(\Delight\Auth\Role::ADMIN)) {
+    // prepare person object
+    $person = new person($db);
+    
+    // get person id
+    $data = json_decode(file_get_contents("php://input"));
+    
+    // set person id to be deleted
+    $person->id = $data->id;
+    
+    // delete the person
+    if($person->delete()){
+    
+        // set response code - 200 ok
+        http_response_code(200);
+    
+        // tell the user
+        echo json_encode(array("message" => "person was deleted."));
+    }
+    
+    // if unable to delete the person
+    else{
+    
+        // set response code - 503 service unavailable
+        http_response_code(503);
+    
+        // tell the user
+        echo json_encode(array("message" => "Unable to delete person."));
+    }
 }
+else {
+    // set response code - 404 Not found
+    http_response_code(401);
  
-// if unable to delete the person
-else{
- 
-    // set response code - 503 service unavailable
-    http_response_code(503);
- 
-    // tell the user
-    echo json_encode(array("message" => "Unable to delete person."));
+    // tell the user no person found
+    echo json_encode(
+        array("message" => "Unauthorized.")
+    );
 }
 ?>
