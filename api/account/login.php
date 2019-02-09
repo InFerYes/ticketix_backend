@@ -26,7 +26,7 @@ if(
 ){
     $account->email = $data->email;
     $account->username = null;
-    $account->password = $data->email;
+    $account->password = $data->password;
 
     try {
         $auth->login($account->email, $account->password);
