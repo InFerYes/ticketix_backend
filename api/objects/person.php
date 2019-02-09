@@ -18,7 +18,7 @@ class Person{
     public $createdate;
     public $modifdate;
     public $teamname;
-    public $iduser; //to implement
+    public $iduser;
  
     // constructor with $db as database connection
     public function __construct($db){
@@ -72,7 +72,6 @@ class Person{
             haspaid=:haspaid, 
             modifdate=:modifdate, 
             createdate=:createdate,
-            idticket=:idticket,
             iduser=:iduser
         ";
         
@@ -90,7 +89,6 @@ class Person{
         $this->haspaid=htmlspecialchars(strip_tags($this->haspaid));
         $this->modifdate=htmlspecialchars(strip_tags($this->modifdate));
         $this->createdate=htmlspecialchars(strip_tags($this->createdate));
-        $this->idticket=htmlspecialchars(strip_tags($this->idticket));
         $this->iduser=htmlspecialchars(strip_tags($this->iduser));
     
         // bind values
@@ -103,7 +101,6 @@ class Person{
         $stmt->bindParam(":haspaid", $this->haspaid, PDO::PARAM_BOOL);
         $stmt->bindParam(":modifdate", $this->modifdate);
         $stmt->bindParam(":createdate", $this->createdate);
-        $stmt->bindParam(":idticket", $this->idticket);
         $stmt->bindParam(":iduser", $this->iduser);
     
         // execute query

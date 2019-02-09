@@ -30,8 +30,7 @@ if(
     !empty($data->person->firstname) &&
     !empty($data->person->lastname) &&
     !empty($data->person->nickname) &&
-    !empty($data->person->email) && 
-    !empty($data->person->iduser)
+    !empty($data->person->email)
 ){
     $account->email = $data->account->email;
     $account->username = null;
@@ -43,25 +42,25 @@ if(
     $person->email = $data->person->email;
     $person->createdate = date('Y-m-d H:i:s');
     $person->modifdate = date('Y-m-d H:i:s');
-    $person->idticket = $data->person->idticket;
     $person->hasagreedtoprivacypolicy = $data->person->hasagreedtoprivacypolicy;
     $person->hasorderedticket = $data->person->hasorderedticket;
     $person->haspaid = $data->person->haspaid;
-    $person->iduser = $data->person->iduser;
 
     try {
-        $userId = $auth->register($account->email, $account->password, $account->username, function ($selector, $token) use ($person) {
-            if($person->create()){
-                http_response_code(201);
+        
+        $person->iduser = $auth->register($account->email, $account->password, $account->username);
+        //$newUserId = $userId = $auth->register($account->email, $account->password, $account->username, function ($selector, $token) use ($person, $auth) {});
 
-                echo json_encode(array("message" => "Account and profile has been created."));
-            }
-            else{
-                http_response_code(503);
+        if($person->iduser !== null && $person->iduser > 0 && $person->create() !==false){
+            http_response_code(201);
 
-                echo json_encode(array("message" => "Unable to create profile, but account was created."));
-            }
-        });
+            echo json_encode(array("message" => "Account and profile have been created."));
+        }
+        else{
+            http_response_code(503);
+
+            echo json_encode(array("message" => "Unable to create profile, but account was created."));
+        }
     }
     catch (\Delight\Auth\InvalidEmailException $e) {
         http_response_code(406);
