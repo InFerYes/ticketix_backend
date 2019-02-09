@@ -22,12 +22,12 @@ if ($auth->isLoggedIn()) {
     $person = new person($db);
     
     // set ID property of record to read
-    $person->id = isset($_GET['id']) ? $_GET['id'] : die();
+    $person->iduser = $auth->getUserId();//= isset($_GET['id']) ? $_GET['id'] : die();
     
     // read the details of person to be edited
     $person->readOne();
     
-    if($person->id!=null){
+    if($person->iduser!=null){
         // create array
         $person_arr = array(
             "id" => $person->id,

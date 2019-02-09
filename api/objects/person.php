@@ -75,7 +75,6 @@ class Person{
             iduser=:iduser
         ";
         
-        $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_WARNING);
         // prepare query
         $stmt = $this->conn->prepare($query);
         
@@ -135,14 +134,15 @@ class Person{
         LEFT JOIN teammembers tm ON tm.IdPersonMember = p.id
         LEFT JOIN team t ON tm.IdTeam = t.id
         WHERE 
-            p.id = ?
+            p.iduser = ?
         ";
-    
+        echo($this->iduser);
+        $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_WARNING);
         // prepare query statement
         $stmt = $this->conn->prepare( $query );
         
         // bind id of person to be updated
-        $stmt->bindParam(1, $this->id);
+        $stmt->bindParam(1, $this->iduser);
     
         // execute query
         $stmt->execute();
