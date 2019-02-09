@@ -8,6 +8,8 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
  
 // get database connection
 include_once '../config/database.php';
+include_once '../objects/person.php';
+include_once '../objects/account.php';
 require(realpath(__DIR__ . '/../../vendor/autoload.php'));
  
 $database = new Database();
@@ -15,29 +17,51 @@ $db = $database->getConnection();
  
 $auth = new \Delight\Auth\Auth($db);
 
-$data = json_decode(file_get_contents("php://input"));
-include_once '../objects/account.php';    
+$account = new account($db);
+$person = new person($db);
 
-$account = new Account();
+$data = json_decode(file_get_contents("php://input"));
 
 if(
-    !empty($data->email) &&
-    !empty($data->password)
+    !empty($data->person) &&
+    !empty($data->account) &&
+    !empty($data->account->email) &&
+    !empty($data->account->password) &&
+    !empty($data->person->firstname) &&
+    !empty($data->person->lastname) &&
+    !empty($data->person->nickname) &&
+    !empty($data->person->email) && 
+    !empty($data->person->iduser)
 ){
-    $account->email = $data->email;
+    $account->email = $data->account->email;
     $account->username = null;
-    $account->password = $data->email;
- 
+    $account->password = $data->account->password;
+
+    $person->firstname = $data->person->firstname;
+    $person->lastname = $data->person->lastname;
+    $person->nickname = $data->person->nickname;
+    $person->email = $data->person->email;
+    $person->createdate = date('Y-m-d H:i:s');
+    $person->modifdate = date('Y-m-d H:i:s');
+    $person->idticket = $data->person->idticket;
+    $person->hasagreedtoprivacypolicy = $data->person->hasagreedtoprivacypolicy;
+    $person->hasorderedticket = $data->person->hasorderedticket;
+    $person->haspaid = $data->person->haspaid;
+    $person->iduser = $data->person->iduser;
+
     try {
-        $userId = $auth->register($account->email, $account->password, $account->username, function ($selector, $token) {
-            //echo 'Send ' . $selector . ' and ' . $token . ' to the user (e.g. via email)';
+        $userId = $auth->register($account->email, $account->password, $account->username, function ($selector, $token) use ($person) {
+            if($person->create()){
+                http_response_code(201);
+
+                echo json_encode(array("message" => "Account and profile has been created."));
+            }
+            else{
+                http_response_code(503);
+
+                echo json_encode(array("message" => "Unable to create profile, but account was created."));
+            }
         });
-
-        http_response_code(201);
-
-        echo json_encode(
-            array("message" => "Created.")
-        );
     }
     catch (\Delight\Auth\InvalidEmailException $e) {
         http_response_code(406);

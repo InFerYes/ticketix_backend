@@ -11,79 +11,66 @@ include_once '../config/database.php';
  
 // instantiate person object
 include_once '../objects/person.php';
-require(realpath(__DIR__ . '/../../vendor/autoload.php'));
 
 $database = new Database();
 $db = $database->getConnection();
- 
-$auth = new \Delight\Auth\Auth($db);
 
-if ($auth->isLoggedIn() && $auth->hasRole(\Delight\Auth\Role::ADMIN)) {
+$person = new person($db);
 
-    $person = new person($db);
-    
-    // get posted data
-    $data = json_decode(file_get_contents("php://input"));
-    
-    // make sure data is not empty
-    if(
-        !empty($data->firstname) &&
-        !empty($data->lastname) &&
-        !empty($data->nickname) &&
-        !empty($data->email)
-    ){
-    
-        // set person property values
-        $person->firstname = $data->firstname;
-        $person->lastname = $data->lastname;
-        $person->nickname = $data->nickname;
-        $person->email = $data->email;
-        $person->createdate = date('Y-m-d H:i:s');
-        $person->modifdate = date('Y-m-d H:i:s');
-        $person->idticket = $data->idticket;
-        $person->hasagreedtoprivacypolicy = $data->hasagreedtoprivacypolicy;
-        $person->hasorderedticket = $data->hasorderedticket;
-        $person->haspaid = $data->haspaid;
+// get posted data
+$data = json_decode(file_get_contents("php://input"));
 
-        // create the person
-        if($person->create()){
-        
+// make sure data is not empty
+if(
+    !empty($data->firstname) &&
+    !empty($data->lastname) &&
+    !empty($data->nickname) &&
+    !empty($data->email) && 
+    !empty($data->iduser)
+){
+
+    // set person property values
+    $person->firstname = $data->firstname;
+    $person->lastname = $data->lastname;
+    $person->nickname = $data->nickname;
+    $person->email = $data->email;
+    $person->createdate = date('Y-m-d H:i:s');
+    $person->modifdate = date('Y-m-d H:i:s');
+    $person->idticket = $data->idticket;
+    $person->hasagreedtoprivacypolicy = $data->hasagreedtoprivacypolicy;
+    $person->hasorderedticket = $data->hasorderedticket;
+    $person->haspaid = $data->haspaid;
+    $person->iduser = $data->iduser;
+
+    // create the person
+    if($person->create()){
     
-            // set response code - 201 created
-            http_response_code(201);
-    
-            // tell the user
-            echo json_encode(array("message" => "person was created."));
-        }
-    
-        // if unable to create the person, tell the user
-        else{
-    
-            // set response code - 503 service unavailable
-            http_response_code(503);
-    
-            // tell the user
-            echo json_encode(array("message" => "Unable to create person."));
-        }
-    }
-    
-    // tell the user data is incomplete
-    else{
-    
-        // set response code - 400 bad request
-        http_response_code(400);
-    
+
+        // set response code - 201 created
+        http_response_code(201);
+
         // tell the user
-        echo json_encode(array("message" => "Unable to create person. Data is incomplete."));
+        echo json_encode(array("message" => "person was created."));
+    }
+
+    // if unable to create the person, tell the user
+    else{
+
+        // set response code - 503 service unavailable
+        http_response_code(503);
+
+        // tell the user
+        echo json_encode(array("message" => "Unable to create person."));
     }
 }
-else {
-    // set response code - 404 Not found
-    http_response_code(401);
- 
-    // tell the user no person found
-    echo json_encode(
-        array("message" => "Unauthorized.")
-    );
+
+// tell the user data is incomplete
+else{
+
+    // set response code - 400 bad request
+    http_response_code(400);
+
+    // tell the user
+    echo json_encode(array("message" => "Unable to create person. Data is incomplete."));
 }
 ?>

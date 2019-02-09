@@ -72,10 +72,11 @@ class Person{
             haspaid=:haspaid, 
             modifdate=:modifdate, 
             createdate=:createdate,
-            idticket=:idticket
+            idticket=:idticket,
+            iduser=:iduser
         ";
         
-        
+        $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_WARNING);
         // prepare query
         $stmt = $this->conn->prepare($query);
         
@@ -90,6 +91,7 @@ class Person{
         $this->modifdate=htmlspecialchars(strip_tags($this->modifdate));
         $this->createdate=htmlspecialchars(strip_tags($this->createdate));
         $this->idticket=htmlspecialchars(strip_tags($this->idticket));
+        $this->iduser=htmlspecialchars(strip_tags($this->iduser));
     
         // bind values
         $stmt->bindParam(":firstname", $this->firstname);
@@ -102,6 +104,7 @@ class Person{
         $stmt->bindParam(":modifdate", $this->modifdate);
         $stmt->bindParam(":createdate", $this->createdate);
         $stmt->bindParam(":idticket", $this->idticket);
+        $stmt->bindParam(":iduser", $this->iduser);
     
         // execute query
         if($stmt->execute()){
