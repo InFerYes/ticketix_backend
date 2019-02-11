@@ -89,7 +89,7 @@ class team{
             INSERT INTO " . $this->table_name . " 
                 SET
                 name=:name, 
-                IdPersonLeader=:idleader, 
+                IdPersonLeader=(SELECT p.Id FROM person p INNER JOIN users u ON u.Id = p.IdUser WHERE u.Id = :authid), 
                 modifdate=:modifdate, 
                 createdate=:createdate
             ";
@@ -100,13 +100,13 @@ class team{
         
         // sanitize
         $this->name=htmlspecialchars(strip_tags($this->name));
-        $this->idleader=htmlspecialchars(strip_tags($this->idleader));
+        $this->authid=htmlspecialchars(strip_tags($this->authid));
         $this->modifdate=htmlspecialchars(strip_tags($this->modifdate));
         $this->createdate=htmlspecialchars(strip_tags($this->createdate));
     
         // bind values
         $stmt->bindParam(":name", $this->name);
-        $stmt->bindParam(":idleader", $this->idleader);
+        $stmt->bindParam(":authid", $this->authid);
         $stmt->bindParam(":modifdate", $this->modifdate);
         $stmt->bindParam(":createdate", $this->createdate);
     
@@ -165,7 +165,7 @@ class team{
                     name=:name, 
                     modifdate=:modifdate
                     WHERE
-                        id = :id";
+                        idpersonleader = (SELECT p.Id FROM person p INNER JOIN users u ON u.Id = p.IdUser WHERE u.Id = :authid)";
 
         //$this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_WARNING);
         // prepare query
@@ -175,13 +175,13 @@ class team{
         $this->idleader=htmlspecialchars(strip_tags($this->idleader));
         $this->name=htmlspecialchars(strip_tags($this->name));
         $this->modifdate=htmlspecialchars(strip_tags($this->modifdate));
-        $this->id=htmlspecialchars(strip_tags($this->id));
+        $this->authid=htmlspecialchars(strip_tags($this->authid));
 
         // bind values
         $stmt->bindParam(":idleader", $this->idleader);
         $stmt->bindParam(":name", $this->name);
         $stmt->bindParam(":modifdate", $this->modifdate);
-        $stmt->bindParam(":id", $this->id, PDO::PARAM_INT);
+        $stmt->bindParam(":authid", $this->authid, PDO::PARAM_INT);
 
         // execute query
         if($stmt->execute()){
@@ -189,7 +189,6 @@ class team{
         }
 
         return false;
-
     }
 
     // delete the team

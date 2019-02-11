@@ -17,7 +17,7 @@ $db = $database->getConnection();
 
 $auth = new \Delight\Auth\Auth($db);
 
-if ($auth->isLoggedIn() && $auth->hasRole(\Delight\Auth\Role::ADMIN)) {
+if ($auth->isLoggedIn()) { //} && $auth->hasRole(\Delight\Auth\Role::ADMIN)) {
 
     // prepare team object
     $team = new team($db);
@@ -26,12 +26,13 @@ if ($auth->isLoggedIn() && $auth->hasRole(\Delight\Auth\Role::ADMIN)) {
     $data = json_decode(file_get_contents("php://input"));
     
     // set ID property of team to be edited
-    $team->id = $data->id;
+    $team->authid = $auth->getUserId();
     
     // set team property values
     $team->idleader = $data->idleader;
     $team->name = $data->name;
     $team->modifdate = date('Y-m-d H:i:s');
+    
 
     // update the team
     if($team->update()){
