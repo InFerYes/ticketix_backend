@@ -128,7 +128,8 @@ class team{
             t.Name, 
             t.CreateDate, 
             t.ModifDate,
-            p.NickName
+            p.NickName,
+            t.IdPersonLeader AS idleader
         FROM " . $this->table_name . " t
         INNER JOIN person p ON p.Id = t.IdPersonLeader
         WHERE p.IdUser = ?
@@ -152,6 +153,7 @@ class team{
         $this->modifdate = $row['ModifDate'];
         $this->createdate = $row['ModifDate'];
         $this->leadernickname = $row['NickName'];
+        $this->idleader = $row['idleader'];
     }
 
     // update the team

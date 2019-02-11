@@ -22,7 +22,7 @@ if ($auth->isLoggedIn()) {
     $team = new team($db);
     
     // set ID property of record to read
-    $team->authid = isset($_GET['authid']) ? $_GET['authid'] : die();
+    $team->authid = $auth->getUserId();//isset($_GET['authid']) ? $_GET['authid'] : die();
     
     // read the details of team to be edited
     $team->readOne();
@@ -34,7 +34,8 @@ if ($auth->isLoggedIn()) {
             "name" => $team->name,
             "leadernickname" => $team->leadernickname,
             "modifdate" => $team->modifdate,
-            "createdate" => $team->createdate
+            "createdate" => $team->createdate,
+            "idleader" => $team->idleader
         );
     
         // set response code - 200 OK
