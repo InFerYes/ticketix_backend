@@ -136,8 +136,8 @@ class Person{
         WHERE 
             p.iduser = ?
         ";
-        echo($this->iduser);
-        $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_WARNING);
+
+        //$this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_WARNING);
         // prepare query statement
         $stmt = $this->conn->prepare( $query );
         
@@ -161,6 +161,8 @@ class Person{
         $this->email = $row['email'];
         $this->modifdate = $row['modifdate'];
         $this->createdate = $row['createdate'];
+        $this->teamname = $row['teamname'];
+        $this->id = $row['id'];
     }
 
     // update the person
