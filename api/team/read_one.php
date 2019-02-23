@@ -35,7 +35,9 @@ if ($auth->isLoggedIn()) {
             "leadernickname" => $team->leadernickname,
             "modifdate" => $team->modifdate,
             "createdate" => $team->createdate,
-            "idleader" => $team->idleader
+            "idleader" => $team->idleader,
+            "isinvitationopen" => $team->isinvitationopen,
+            "ismember" => $team->ismember
         );
     
         // set response code - 200 OK

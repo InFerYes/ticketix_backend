@@ -348,5 +348,36 @@ class Person{
     
         return $row['total_rows'];
     }
+
+    function getTeamMembers(){
+ 
+        // query to read single record
+        $query = "
+            SELECT
+                p.id, 
+                p.nickname
+            FROM
+            person p
+            LEFT JOIN teammembers tm ON tm.IdPersonMember = p.id
+            WHERE
+                tm.IdTeam = (SELECT tm.IdTeam FROM teammembers tm WHERE tm.IdPersonMember = (SELECT p.id FROM person p WHERE p.iduser = ?) AND tm.IsMember = 1 AND tm.IsInvitationOpen = 0)
+              AND tm.IsMember = 1
+            ORDER BY
+                p.NickName ASC
+        ";
+   
+        // prepare query statement
+        $stmt = $this->conn->prepare( $query );
+
+        // bind id of team to be updated
+        $stmt->bindParam(1, $this->authid);
+
+        // execute query
+        $stmt->execute();
+
+        // get retrieved rows
+        return $stmt;
+
+    }
 }
 ?>

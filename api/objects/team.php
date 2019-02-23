@@ -13,6 +13,8 @@ class team{
     public $modifdate;
     public $leadernickname;
     public $authid;
+    public $isinvitationopen;
+    public $ismember;
  
     // constructor with $db as database connection
     public function __construct($db){
@@ -43,43 +45,6 @@ class team{
     
         return $stmt;
     }
-
-    // function getmembers($idteam){
-    //      // select all query
-    //      $query = "
-    //         SELECT
-    //             p.Id,
-    //             p.NickName,
-    //             p.FirstName,
-    //             p.LastName
-    //         FROM person p
-    //         INNER JOIN teammembers tm ON tm.IdPersonMember = p.Id
-    //         WHERE tm.IdTeam = ?";             
-    
-    //     // prepare query statement
-    //     $stmt = $this->conn->prepare( $query );
-        
-    //     // bind id of team to be updated
-    //     $stmt->bindParam(1, $idteam);
-    
-    //     // execute query
-    //     $stmt->execute();
-    
-    //     // get retrieved row
-    //     $row = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    //     // set values to object properties
-    //     $this->members[] = $row;
-    //     // $this->lastname = $row['lastname'];
-    //     // $this->nickname = $row['nickname'];
-    //     // $this->hasagreedtoprivacypolicy = $row['hasagreedtoprivacypolicy'];
-    //     // $this->hasorderedticket = $row['hasorderedticket'];
-    //     // $this->haspaid = $row['haspaid'];
-    //     // $this->idticket = $row['idticket'];
-    //     // $this->email = $row['email'];
-    //     // $this->modifdate = $row['modifdate'];
-    //     // $this->createdate = $row['createdate'];
-    // }
 
     // create team
     function create(){
@@ -129,10 +94,15 @@ class team{
             t.CreateDate, 
             t.ModifDate,
             p.NickName,
-            t.IdPersonLeader AS idleader
-        FROM " . $this->table_name . " t
+            t.IdPersonLeader AS idleader,
+            tm.IsInvitationOpen,
+            tm.IsMember
+        FROM  team t
         INNER JOIN person p ON p.Id = t.IdPersonLeader
-        WHERE p.IdUser = ?
+        INNER JOIN teammembers tm ON tm.IdTeam = t.Id 
+          AND tm.IsMember = 1 
+          AND tm.IsInvitationOpen = 0 
+          AND tm.IdPersonMember = (SELECT p.id FROM person p WHERE p.iduser = ?)
         ";
     
         // prepare query statement
@@ -154,6 +124,8 @@ class team{
         $this->createdate = $row['ModifDate'];
         $this->leadernickname = $row['NickName'];
         $this->idleader = $row['idleader'];
+        $this->isinvitationopen = $row['IsInvitationOpen'];
+        $this->ismember = $row['IsMember'];
     }
 
     // update the team
@@ -218,38 +190,164 @@ class team{
     }
 
     // search teams
-    function search($keywords){
+    // function search($keywords){
  
-        // select all query
-        $query = "SELECT
-        p.firstname, p.id, p.lastname, p.nickname, p.email, p.hasorderedticket, p.haspaid, p.hasagreedtoprivacypolicy, p.idticket, t.name AS team, p.createdate, p.modifdate
-        FROM
-        " . $this->table_name . " p
-        LEFT JOIN teammembers tm ON tm.IdteamMember = p.id
-        LEFT JOIN team t ON tm.IdTeam = t.id
-        WHERE
-                    p.firstname LIKE ? OR p.lastname LIKE ? OR p.nickname LIKE ? OR p.nickname LIKE ? OR t.name LIKE ?
-                ORDER BY
-                    p.createdate DESC";
+    //     // select all query
+    //     $query = "SELECT
+    //     p.firstname, p.id, p.lastname, p.nickname, p.email, p.hasorderedticket, p.haspaid, p.hasagreedtoprivacypolicy, p.idticket, t.name AS team, p.createdate, p.modifdate
+    //     FROM
+    //     " . $this->table_name . " p
+    //     LEFT JOIN teammembers tm ON tm.IdteamMember = p.id
+    //     LEFT JOIN team t ON tm.IdTeam = t.id
+    //     WHERE
+    //                 p.firstname LIKE ? OR p.lastname LIKE ? OR p.nickname LIKE ? OR p.nickname LIKE ? OR t.name LIKE ?
+    //             ORDER BY
+    //                 p.createdate DESC";
     
-        // prepare query statement
+    //     // prepare query statement
+    //     $stmt = $this->conn->prepare($query);
+    
+    //     // sanitize
+    //     $keywords=htmlspecialchars(strip_tags($keywords));
+    //     $keywords = "%{$keywords}%";
+    
+    //     // bind
+    //     $stmt->bindParam(1, $keywords);
+    //     $stmt->bindParam(2, $keywords);
+    //     $stmt->bindParam(3, $keywords);
+    //     $stmt->bindParam(4, $keywords);
+    //     $stmt->bindParam(5, $keywords);
+    
+    //     // execute query
+    //     $stmt->execute();
+    
+    //     return $stmt;
+    // }
+
+    function check_invitations($authid){
+        $query= "
+        SELECT 
+            t.name,
+            t.id
+        FROM teammembers tm 
+        INNER JOIN person p ON p.Id = tm.IdPersonMember
+        INNER JOIN " . $this->table_name . " t ON t.Id = tm.IdTeam
+        WHERE p.IdUser = ? 
+          AND tm.isinvitationopen = 1 
+          AND tm.ismember = 0
+        ";
+
         $stmt = $this->conn->prepare($query);
-    
-        // sanitize
-        $keywords=htmlspecialchars(strip_tags($keywords));
-        $keywords = "%{$keywords}%";
-    
-        // bind
-        $stmt->bindParam(1, $keywords);
-        $stmt->bindParam(2, $keywords);
-        $stmt->bindParam(3, $keywords);
-        $stmt->bindParam(4, $keywords);
-        $stmt->bindParam(5, $keywords);
-    
-        // execute query
+
+        $stmt->bindParam(1, $authid);
+
         $stmt->execute();
     
         return $stmt;
+    }
+
+    function accept_invitation($idteam, $authid){
+        //is user leader of a team?
+        $query="
+        SELECT 
+            t.Id 
+        FROM team t 
+        WHERE t.IdPersonLeader = (SELECT p.Id FROM person p WHERE p.IdUser = :authid)
+        ";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":authid", $authid);
+
+        $stmt->execute();
+
+        $num = $stmt->rowCount();
+
+        //is this the team that has an open invitation?
+        $querycorrectinvitation="
+        SELECT 
+            tm.Id 
+        FROM teammembers tm 
+        INNER JOIN person p ON p.Id = tm.IdPersonMember
+        WHERE p.IdUser = :authid
+          AND tm.IdTeam = :idteam
+          AND tm.IsInvitationOpen = 1 
+          AND tm.IsMember = 0
+        ";
+
+        $stmtci = $this->conn->prepare($querycorrectinvitation);
+        $stmtci->bindParam(":authid", $authid);
+        $stmtci->bindParam(":idteam", $idteam);
+
+        $stmtci->execute();
+
+        $numci = $stmtci->rowCount();
+
+        if ($num==0 && $numci==1) {
+
+            $query2="
+            DELETE
+            FROM teammembers
+            WHERE IdPersonMember = (SELECT p.Id FROM person p WHERE p.IdUser = :authid)
+              AND IsMember = 1
+            ";
+
+            $stmt2 = $this->conn->prepare($query2);
+            $stmt2->bindParam(":authid", $authid);
+
+            $stmt2->execute();
+
+            if ($stmt2->rowCount() > 0) {
+                $query3="
+                    UPDATE teammembers tm 
+                    INNER JOIN team t ON t.Id = tm.IdTeam
+                    SET
+                        IsInvitationOpen = 0,
+                        IsMember = 1
+                    WHERE tm.idpersonmember = (SELECT p.Id FROM person p WHERE p.IdUser = :authid)
+                    AND tm.IdTeam = :idteam
+                ";
+
+                $stmt3 = $this->conn->prepare($query3);
+                $stmt3->bindParam(":authid", $authid);
+                $stmt3->bindParam(":idteam", $idteam);
+
+                $stmt3->execute();
+
+                if ($stmt3->rowCount() > 0) {
+                    return true;
+                }
+            
+                return false;
+            }
+
+            return false;
+        }
+
+        return false;
+    }
+
+    function decline_invitation($idteam, $authid){
+        //is user leader of a team?
+        $query="
+        DELETE FROM teammembers
+        WHERE IdPersonMember = (SELECT p.Id FROM person p WHERE p.IdUser = :authid)
+            AND IsInvitationOpen = 1 AND IsMember = 0 AND IdTeam = :idteam
+        ";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":authid", $authid);
+        $stmt->bindParam(":idteam", $idteam);
+
+        $stmt->execute();
+
+        $num = $stmt->rowCount();
+
+        if ($num>0) {
+
+            return true;
+        }
+
+        return false;
     }
 }
 ?>
