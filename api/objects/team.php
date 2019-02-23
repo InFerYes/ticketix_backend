@@ -97,12 +97,12 @@ class team{
             t.IdPersonLeader AS idleader,
             tm.IsInvitationOpen,
             tm.IsMember
-        FROM  team t
+        FROM teammembers tm
+        INNER JOIN team t ON t.Id = tm.IdTeam
         INNER JOIN person p ON p.Id = t.IdPersonLeader
-        INNER JOIN teammembers tm ON tm.IdTeam = t.Id 
-          AND tm.IsMember = 1 
-          AND tm.IsInvitationOpen = 0 
-          AND tm.IdPersonMember = (SELECT p.id FROM person p WHERE p.iduser = ?)
+        WHERE tm.IsMember = 1 
+        AND tm.IsInvitationOpen = 0 
+        AND tm.IdPersonMember = (SELECT p.id FROM person p WHERE p.iduser = ?)
         ";
     
         // prepare query statement
