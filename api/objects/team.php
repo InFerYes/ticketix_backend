@@ -349,5 +349,78 @@ class team{
 
         return false;
     }
+
+    function user_with_mail_exists($email){
+        $query = "SELECT Id FROM person WHERE Email = :email";
+
+        $stmt = $this->conn->prepare($query);
+        //$stmt->bindParam(":authid", $this->authid);
+        $stmt->bindParam(":email", $email);
+
+        $stmt->execute();
+
+        $num = $stmt->rowCount();
+
+        if ($num>0) {
+            return true;
+        }
+
+        return false;
+    }
+
+    function user_is_leader($authid, $idteam){
+        $query = "
+            SELECT 
+                Id 
+            FROM team 
+            WHERE IdPersonLeader = (SELECT p.Id FROM person p WHERE p.IdUser = :authid) 
+            AND Id = :idteam
+        ";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":authid", $authid);
+        $stmt->bindParam(":idteam", $idteam);
+
+        $stmt->execute();
+
+        $num = $stmt->rowCount();
+
+        if ($num>0) {
+            return true;
+        }
+
+        return false;
+    }
+
+    function create_invitation(){
+        if ($this->user_is_leader($this->authid, $this->id)) {
+            //maybe fix leader can't invite himself
+
+            $query = "
+                INSERT INTO teammembers 
+                (IdPersonMember, IdTeam, IsMember, IsInvitationOpen) 
+                VALUES 
+                ((SELECT p.Id FROM person p WHERE p.IdUser = :authid),:id,0,1)
+            ";
+    
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(":authid", $this->authid);
+            $stmt->bindParam(":id", $this->id);
+    
+            // execute query
+            if($stmt->execute()){
+                return true;
+            }
+        
+            return false;
+        }
+
+        return false;
+        
+    }
+
+    function send_invitation_mail() {
+        echo "Please open your mail client lol";
+    }
 }
 ?>
