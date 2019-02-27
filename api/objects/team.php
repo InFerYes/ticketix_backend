@@ -15,6 +15,7 @@ class team{
     public $authid;
     public $isinvitationopen;
     public $ismember;
+    public $idmember;
  
     // constructor with $db as database connection
     public function __construct($db){
@@ -141,7 +142,7 @@ class team{
                     WHERE
                         idpersonleader = (SELECT p.Id FROM person p INNER JOIN users u ON u.Id = p.IdUser WHERE u.Id = :authid)";
 
-        //$this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_WARNING);
+        
         // prepare query
         $stmt = $this->conn->prepare($query);
 
@@ -327,7 +328,6 @@ class team{
     }
 
     function decline_invitation($idteam, $authid){
-        //is user leader of a team?
         $query="
         DELETE FROM teammembers
         WHERE IdPersonMember = (SELECT p.Id FROM person p WHERE p.IdUser = :authid)
@@ -345,6 +345,33 @@ class team{
         if ($num>0) {
 
             return true;
+        }
+
+        return false;
+    }
+
+    function remove_teammember(){
+        if ($this->user_is_leader($this->authid, $this->id)) {
+            $query="
+            DELETE FROM teammembers
+            WHERE IdPersonMember = :userid
+              AND IdTeam = :idteam
+            ";
+            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_WARNING);
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(":userid", $this->idmember);
+            $stmt->bindParam(":idteam", $this->id);
+    
+            $stmt->execute();
+    
+            $num = $stmt->rowCount();
+    
+            if ($num>0) {
+    
+                return true;
+            }
+    
+            return false;
         }
 
         return false;
