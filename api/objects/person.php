@@ -154,9 +154,9 @@ class Person{
         $this->firstname = $row['firstname'];
         $this->lastname = $row['lastname'];
         $this->nickname = $row['nickname'];
-        $this->hasagreedtoprivacypolicy = $row['hasagreedtoprivacypolicy'];
-        $this->hasorderedticket = $row['hasorderedticket'];
-        $this->haspaid = $row['haspaid'];
+        $this->hasagreedtoprivacypolicy = (bool)$row['hasagreedtoprivacypolicy'];
+        $this->hasorderedticket = (bool)$row['hasorderedticket'];
+        $this->haspaid = (bool)$row['haspaid'];
         $this->idticket = $row['idticket'];
         $this->email = $row['email'];
         $this->modifdate = $row['modifdate'];
@@ -353,7 +353,7 @@ class Person{
  
         // query to read single record
         $query = "
-            SELECT
+            SELECT DISTINCT
                 p.id, 
                 p.nickname
             FROM
@@ -361,7 +361,6 @@ class Person{
             LEFT JOIN teammembers tm ON tm.IdPersonMember = p.id
             WHERE
                 tm.IdTeam = (SELECT tm.IdTeam FROM teammembers tm WHERE tm.IdPersonMember = (SELECT p.id FROM person p WHERE p.iduser = ?) AND tm.IsMember = 1 AND tm.IsInvitationOpen = 0)
-              AND tm.IsMember = 1
             ORDER BY
                 p.NickName ASC
         ";
