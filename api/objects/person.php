@@ -183,7 +183,7 @@ class Person{
             modifdate=:modifdate,
             idticket=:idticket
         WHERE
-            id = :id
+            id = (SELECT p.id FROM person p WHERE p.iduser = :authid)
         ";
 
         //$this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_WARNING);
@@ -200,7 +200,8 @@ class Person{
         $this->haspaid=htmlspecialchars(strip_tags($this->haspaid));
         $this->modifdate=htmlspecialchars(strip_tags($this->modifdate));
         $this->idticket=htmlspecialchars(strip_tags($this->idticket));
-        $this->id=htmlspecialchars(strip_tags($this->id));
+        $this->authid=htmlspecialchars(strip_tags($this->authid));
+        
 
         // bind values
         $stmt->bindParam(":firstname", $this->firstname);
@@ -212,7 +213,7 @@ class Person{
         $stmt->bindParam(":haspaid", $this->haspaid, PDO::PARAM_BOOL);
         $stmt->bindParam(":modifdate", $this->modifdate);
         $stmt->bindParam(":idticket", $this->idticket);
-        $stmt->bindParam(":id", $this->id, PDO::PARAM_INT);
+        $stmt->bindParam(":authid", $this->authid, PDO::PARAM_INT);
 
         // execute query
         if($stmt->execute()){

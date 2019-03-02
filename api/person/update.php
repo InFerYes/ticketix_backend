@@ -17,7 +17,7 @@ $db = $database->getConnection();
 
 $auth = new \Delight\Auth\Auth($db);
 
-if ($auth->isLoggedIn() && $auth->hasRole(\Delight\Auth\Role::ADMIN)) {
+if ($auth->isLoggedIn()) {
 
     // prepare person object
     $person = new person($db);
@@ -26,7 +26,7 @@ if ($auth->isLoggedIn() && $auth->hasRole(\Delight\Auth\Role::ADMIN)) {
     $data = json_decode(file_get_contents("php://input"));
     
     // set ID property of person to be edited
-    $person->id = $data->id;
+    $person->authid = $auth->getUserId();
     
     // set person property values
     $person->firstname = $data->firstname;
@@ -42,11 +42,34 @@ if ($auth->isLoggedIn() && $auth->hasRole(\Delight\Auth\Role::ADMIN)) {
     // update the person
     if($person->update()){
     
-        // set response code - 200 ok
-        http_response_code(200);
+        $person->iduser = $auth->getUserId();//= isset($_GET['id']) ? $_GET['id'] : die();
     
-        // tell the user
-        echo json_encode(array("message" => "person was updated."));
+        // read the details of person to be edited
+        $person->readOne();
+        
+        if($person->iduser!=null){
+            // create array
+            $person_arr = array(
+                "id" => $person->id,
+                "firstname" => $person->firstname,
+                "lastname" => $person->lastname,
+                "nickname" => $person->nickname,
+                "hasagreedtoprivacypolicy" => (bool)$person->hasagreedtoprivacypolicy,
+                "hasorderedticket" => (bool)$person->hasorderedticket,
+                "haspaid" => (bool)$person->haspaid,
+                "idticket" => $person->idticket,
+                "email" => $person->email,
+                "modifdate" => $person->modifdate,
+                "createdate" => $person->createdate,
+                "teamname" => $person->teamname
+            );
+        
+            // set response code - 200 OK
+            http_response_code(200);
+        
+            // make it json format
+            echo json_encode($person_arr);
+        }
     }
     
     // if unable to update the person, tell the user
