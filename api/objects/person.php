@@ -366,18 +366,13 @@ class Person{
                 p.NickName ASC
         ";
    
-        // prepare query statement
         $stmt = $this->conn->prepare( $query );
 
-        // bind id of team to be updated
         $stmt->bindParam(1, $this->authid);
 
-        // execute query
         $stmt->execute();
 
-        // get retrieved rows
         return $stmt;
-
     }
 }
 ?>

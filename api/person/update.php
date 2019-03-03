@@ -50,7 +50,6 @@ if ($auth->isLoggedIn()) {
         if($person->iduser!=null){
             // create array
             $person_arr = array(
-                "id" => $person->id,
                 "firstname" => $person->firstname,
                 "lastname" => $person->lastname,
                 "nickname" => $person->nickname,

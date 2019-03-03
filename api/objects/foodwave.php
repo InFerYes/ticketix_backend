@@ -13,6 +13,10 @@ class Foodwave{
     public $store_createdate;
     public $store_modifdate;
     public $store_isactive;
+    public $product_id;
+    public $product_price;
+    public $product_name;
+    public $products;
  
     // constructor with $db as database connection
     public function __construct($db){
@@ -85,6 +89,44 @@ class Foodwave{
         }
 
         return false;
+    }
+
+    function get_active_foodwave(){
+        $activewavequery = "
+            SELECT 
+                s.Name AS store_name,
+                s.Id AS store_id
+            FROM foodwave_store s
+            INNER JOIN foodwave_allowed_stores a ON a.IdStore = s.Id
+            INNER JOIN foodwave f ON f.Id = a.IdFoodwave
+            WHERE NOW() BETWEEN f.StartTime AND f.EndTime
+            ";
+
+        $stmt = $this->conn->prepare( $activewavequery );
+
+        $stmt->execute();
+
+        return $stmt;
+    }
+
+    function get_foodwave_products($store_id) {
+        $productquery = "
+            SELECT 
+                p.Name AS product_name, 
+                p.Price AS product_price,
+                p.Id AS product_id
+            FROM foodwave_product p
+            INNER JOIN foodwave_store s ON s.Id = p.IdStore
+            WHERE s.Id = ?
+            ";
+
+        $stmt = $this->conn->prepare( $productquery );
+
+        $stmt->bindParam(1, $store_id);
+
+        $stmt->execute();
+
+        return $stmt;
     }
 }
 ?>
